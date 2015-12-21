@@ -20,7 +20,7 @@ class BitcoinRPC(object):
             config.get('bitcoind', 'bitcoind_port'))
 
 
-    def bitcoind(self, method, params=[]):
+    def call(self, method, params=[]):
         postdata = dumps({"method": method, 'params': params, 'id': 'jsonrpc'})
         while True:
             try:
