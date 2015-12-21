@@ -10,7 +10,7 @@ from utils import Hash, print_log
 from version import VERSION
 from utils import logger
 from ircthread import IrcThread
-
+from bitcoinrpc import BitcoinRPC
 
 
 class ServerProcessor(Processor):
@@ -19,6 +19,7 @@ class ServerProcessor(Processor):
         Processor.__init__(self)
         self.daemon = True
         self.config = config
+	self.bitcoind = BitcoinRPC(config)
         self.shared = shared
         self.irc_queue = Queue.Queue()
         self.peers = {}
@@ -61,6 +62,19 @@ class ServerProcessor(Processor):
         if method == 'server.banner':
             result = self.config.get('server', 'banner').replace('\\n', '\n')
 
+	elif method == 'server.core.version':
+	    info = self.bitcoind.call('getnetworkinfo')
+	    info.get('version')
+	elif method == 'server.core.subversion':
+	    info = self.bitcoind.call('getnetworkinfo')
+	    info.get('subversion')
+	    result = self.config.get('server', 'subversion')
+	elif method == 'server.core.protocolversion':
+	    info = self.bitcoind.call('getnetworkinfo')
+	    info.get('protocolversion')
+	elif method == 'server.core.relayfee':
+	    info = self.bitcoind.call('getnetworkinfo')
+	    info.get('relayfee')
         elif method == 'server.donation_address':
             result = self.config.get('server', 'donation_address')
 
