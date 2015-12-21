@@ -18,6 +18,8 @@ banner_file = /etc/electrum.banner
 #ssl_keyfile = /path/to/electrum-server.key
 logfile = /var/log/electrum.log
 donation_address = 
+# Set to yes to disable IP logging
+anonymize_logging = no
 
 [leveldb]
 # path to your database
