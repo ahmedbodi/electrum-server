@@ -235,7 +235,10 @@ class TcpServer(threading.Thread):
                             session = TcpSession(self.dispatcher, connection, address, 
                                                  use_ssl=self.use_ssl, ssl_certfile=self.ssl_certfile, ssl_keyfile=self.ssl_keyfile)
                         except BaseException as e:
-                            logger.error("cannot start TCP session" + str(e) + ' ' + repr(address))
+			    if config.get('server', 'anonymize_logging') == 'no':
+                            	logger.error("cannot start TCP session" + str(e) + ' ' + repr(address))
+			    else:
+				logger.error('cannot start TCP session" + str(e)
                             connection.close()
                             continue
                         connection = session._connection
@@ -288,7 +291,10 @@ class TcpServer(threading.Thread):
                         continue
 
                 elif flag & select.POLLHUP:
-                    print_log('client hung up', session.address)
+		    if config.get('server', 'anonymize_logging') == 'no':
+                       print_log('client hung up', session.address)
+		    else:
+			print_log('client hung up')
                     stop_session(fd)
 
                 elif flag & select.POLLOUT:
@@ -309,11 +315,17 @@ class TcpServer(threading.Thread):
                     session.retry_msg = next_msg[sent:]
 
                 elif flag & select.POLLERR:
-                    print_log('handling exceptional condition for', session.address)
+		    if config.get('server', 'anonymize_logging') == 'no':
+                       print_log('handling exceptional condition for', session.address)
+		    else:
+		       print_log('handing exceptional condition for anon client')
                     stop_session(fd)
 
                 elif flag & select.POLLNVAL:
-                    print_log('invalid request', session.address)
+		    if config.get('server', 'anonymize_logging') == 'no':
+                       print_log('invalid request', session.address)
+		    else:
+		       print_log('invalid request')
                     stop_session(fd)
 
 
