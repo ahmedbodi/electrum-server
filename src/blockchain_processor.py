@@ -50,13 +50,17 @@ class BlockchainProcessor(Processor):
         self.mempool_lock = threading.Lock()
 
         self.address_queue = Queue()
-
+        self.bitcoind_url = 'http://%s:%s@%s:%s/' % (
+             config.get('bitcoind', 'bitcoind_user'),
+             config.get('bitcoind', 'bitcoind_password'),
+             config.get('bitcoind', 'bitcoind_host'),
+             config.get('bitcoind', 'bitcoind_port'))
         try:
             self.test_reorgs = config.getboolean('leveldb', 'test_reorgs')   # simulate random blockchain reorgs
         except:
             self.test_reorgs = False
         self.storage = Storage(config, shared, self.test_reorgs)
-	self.bitcoind = BitcoinRPC(config)
+	self.bitcoind = BitcoinRPC(config, shared)
         self.sent_height = 0
         self.sent_header = None
 
@@ -116,13 +120,6 @@ class BlockchainProcessor(Processor):
                 rt = "%.0fmin"%minutes if minutes < 300 else "%.1f hours"%(minutes/60)
                 msg += " (eta %s, %d blocks)" % (rt, remaining_blocks)
             print_log(msg)
-
-    def wait_on_bitcoind(self):
-        self.shared.pause()
-        time.sleep(10)
-        if self.shared.stopped():
-            # this will end the thread
-            raise BaseException()
 
     def bitcoind(self, method, params=[]):
         postdata = dumps({"method": method, 'params': params, 'id': 'jsonrpc'})
