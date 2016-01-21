@@ -7,11 +7,14 @@ import time
 import threading
 import urllib
 from utils import logger
+from processor import Processor
 
 
-class BitcoinRPC(object):
+class BitcoinRPC(Processor):
 
-    def __init__(self, config):
+    def __init__(self, config, shared):
+    	Processor.__init__(self)
+    	self.shared = shared
 	self.config = config
         self.bitcoind_url = 'http://%s:%s@%s:%s/' % (
             config.get('bitcoind', 'bitcoind_user'),
@@ -19,7 +22,13 @@ class BitcoinRPC(object):
             config.get('bitcoind', 'bitcoind_host'),
             config.get('bitcoind', 'bitcoind_port'))
 
-
+    def wait_on_bitcoind(self):
+        self.shared.pause()
+        time.sleep(10)
+        if self.shared.stopped():
+            # this will end the thread
+            raise BaseException()
+            
     def call(self, method, params=[]):
         postdata = dumps({"method": method, 'params': params, 'id': 'jsonrpc'})
         while True:
